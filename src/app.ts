@@ -1,15 +1,14 @@
+import compression from 'compression';
+import cors from 'cors';
+import 'dotenv/config';
 import express from 'express';
 import helmet from 'helmet';
-import cors from 'cors';
-import compression from 'compression';
-import morgan from 'morgan';
 import swaggerUi from 'swagger-ui-express';
+import { swaggerSpec } from './config/swagger';
 import { errorHandler } from './middlewares/error.middleware';
+import { loggingMiddleware } from './middlewares/logging.middleware';
 import { notFoundHandler } from './middlewares/notFound.middleware';
 import routes from './routes';
-import { logger } from './config/logger';
-import { swaggerSpec } from './config/swagger';
-import 'dotenv/config';
 
 const app = express();
 
@@ -32,12 +31,8 @@ app.use(express.urlencoded({ extended: true, limit: '10mb' }));
 // Compression
 app.use(compression());
 
-// Logging
-app.use(
-  morgan('combined', {
-    stream: { write: (message) => logger.info(message.trim()) },
-  })
-);
+// Custom logging middleware (thay thế morgan)
+app.use(loggingMiddleware);
 
 // API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

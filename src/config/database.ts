@@ -1,5 +1,5 @@
 import { PrismaClient } from '@prisma/client';
-import { logger } from './logger';
+import { logSuccess, logError } from './logger';
 
 let prisma: PrismaClient;
 
@@ -22,9 +22,9 @@ if (process.env.NODE_ENV === 'production') {
 export const connectDB = async () => {
   try {
     await prisma.$connect();
-    logger.info('Database connected successfully');
+    logSuccess('Database connected successfully');
   } catch (error) {
-    logger.error('Database connection failed:', error);
+    logError(error as Error, 'Database Connection');
     throw error;
   }
 };
@@ -32,10 +32,10 @@ export const connectDB = async () => {
 export const disconnectDB = async () => {
   try {
     await prisma.$disconnect();
-    logger.info('Database disconnected');
+    logSuccess('Database disconnected');
   } catch (error) {
-    logger.error('Database disconnection failed:', error);
+    logError(error as Error, 'Database Disconnection');
   }
 };
 
-export { prisma }; 
+export { prisma };

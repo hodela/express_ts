@@ -1,4 +1,3 @@
-
 ### 🔐 Authentication APIs
 
 #### 1. Login
@@ -11,8 +10,8 @@ POST /auth/login
 
 ```json
 {
-    "email": "user@example.com",
-    "password": "password123"
+  "email": "user@example.com",
+  "password": "password123"
 }
 ```
 
@@ -20,21 +19,21 @@ POST /auth/login
 
 ```json
 {
-    "user": {
-        "id": "uuid-string",
-        "email": "user@example.com",
-        "name": "John Doe",
-        "avatar": "https://example.com/avatar.jpg",
-        "theme": "light",
-        "language": "en",
-        "role": "user",
-        "createdAt": "2024-01-01T00:00:00Z",
-        "updatedAt": "2024-01-01T00:00:00Z"
-    },
-    "accessToken": "jwt-access-token",
-    "refreshToken": "jwt-refresh-token",
-    "expiresIn": 14400,
-    "tokenType": "Bearer"
+  "user": {
+    "id": "uuid-string",
+    "email": "user@example.com",
+    "name": "John Doe",
+    "avatar": "https://example.com/avatar.jpg",
+    "theme": "light",
+    "language": "en",
+    "role": "user",
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  },
+  "accessToken": "jwt-access-token",
+  "refreshToken": "jwt-refresh-token",
+  "expiresIn": 14400,
+  "tokenType": "Bearer"
 }
 ```
 
@@ -61,39 +60,7 @@ POST /auth/login
 }
 ```
 
-#### 2. Get Current User
-
-```http
-GET /auth/me
-Headers: Authorization: Bearer {access_token}
-```
-
-**Response (200):**
-
-```json
-{
-    "id": "uuid-string",
-    "email": "user@example.com",
-    "name": "John Doe",
-    "avatar": "https://example.com/avatar.jpg",
-    "theme": "light",
-    "language": "en",
-    "role": "user",
-    "createdAt": "2024-01-01T00:00:00Z",
-    "updatedAt": "2024-01-01T00:00:00Z"
-}
-```
-
-**Error Response (401):**
-
-```json
-{
-    "message": "Không thể lấy thông tin user",
-    "code": "GET_USER_FAILED"
-}
-```
-
-#### 3. Refresh Token
+#### 2. Refresh Token
 
 ```http
 POST /auth/refresh
@@ -103,7 +70,7 @@ POST /auth/refresh
 
 ```json
 {
-    "refreshToken": "jwt-refresh-token"
+  "refreshToken": "jwt-refresh-token"
 }
 ```
 
@@ -111,10 +78,10 @@ POST /auth/refresh
 
 ```json
 {
-    "accessToken": "new-jwt-access-token",
-    "refreshToken": "new-jwt-refresh-token",
-    "expiresIn": 14400,
-    "tokenType": "Bearer"
+  "accessToken": "new-jwt-access-token",
+  "refreshToken": "new-jwt-refresh-token",
+  "expiresIn": 14400,
+  "tokenType": "Bearer"
 }
 ```
 
@@ -122,11 +89,11 @@ POST /auth/refresh
 
 ```json
 {
-    "message": "Không thể làm mới token",
-    "code": "REFRESH_TOKEN_FAILED",
-    "details": {
-        "refreshToken": ["Refresh token không hợp lệ hoặc đã hết hạn"]
-    }
+  "message": "Không thể làm mới token",
+  "code": "REFRESH_TOKEN_FAILED",
+  "details": {
+    "refreshToken": ["Refresh token không hợp lệ hoặc đã hết hạn"]
+  }
 }
 ```
 
@@ -141,7 +108,7 @@ Headers: Authorization: Bearer {access_token}
 
 ```json
 {
-    "refreshToken": "jwt-refresh-token"
+  "refreshToken": "jwt-refresh-token"
 }
 ```
 
@@ -149,7 +116,7 @@ Headers: Authorization: Bearer {access_token}
 
 ```json
 {
-    "message": "Đăng xuất thành công"
+  "message": "Đăng xuất thành công"
 }
 ```
 
@@ -163,10 +130,10 @@ POST /auth/register
 
 ```json
 {
-    "email": "newuser@example.com",
-    "password": "password123",
-    "name": "New User",
-    "confirmPassword": "password123"
+  "email": "newuser@example.com",
+  "password": "password123",
+  "name": "New User",
+  "confirmPassword": "password123"
 }
 ```
 
@@ -174,19 +141,19 @@ POST /auth/register
 
 ```json
 {
-    "user": {
-        "id": "uuid-string",
-        "email": "newuser@example.com",
-        "name": "New User",
-        "avatar": null,
-        "theme": "light",
-        "language": "en",
-        "role": "user",
-        "createdAt": "2024-01-01T00:00:00Z",
-        "updatedAt": "2024-01-01T00:00:00Z"
-    },
-    "message": "Đăng ký thành công",
-    "requiresVerification": true
+  "user": {
+    "id": "uuid-string",
+    "email": "newuser@example.com",
+    "name": "New User",
+    "avatar": null,
+    "theme": "light",
+    "language": "en",
+    "role": "user",
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  },
+  "message": "Đăng ký thành công",
+  "requiresVerification": true
 }
 ```
 
@@ -194,12 +161,12 @@ POST /auth/register
 
 ```json
 {
-    "message": "Đăng ký thất bại",
-    "code": "REGISTER_FAILED",
-    "details": {
-        "email": ["Email đã tồn tại"],
-        "password": ["Mật khẩu phải có ít nhất 8 ký tự"]
-    }
+  "message": "Đăng ký thất bại",
+  "code": "REGISTER_FAILED",
+  "details": {
+    "email": ["Email đã tồn tại"],
+    "password": ["Mật khẩu phải có ít nhất 8 ký tự"]
+  }
 }
 ```
 
@@ -213,7 +180,7 @@ POST /auth/forgot-password
 
 ```json
 {
-    "email": "user@example.com"
+  "email": "user@example.com"
 }
 ```
 
@@ -221,7 +188,7 @@ POST /auth/forgot-password
 
 ```json
 {
-    "message": "Email khôi phục mật khẩu đã được gửi"
+  "message": "Email khôi phục mật khẩu đã được gửi"
 }
 ```
 
@@ -229,11 +196,11 @@ POST /auth/forgot-password
 
 ```json
 {
-    "message": "Gửi email khôi phục thất bại",
-    "code": "FORGOT_PASSWORD_FAILED",
-    "details": {
-        "email": ["Email không tồn tại trong hệ thống"]
-    }
+  "message": "Gửi email khôi phục thất bại",
+  "code": "FORGOT_PASSWORD_FAILED",
+  "details": {
+    "email": ["Email không tồn tại trong hệ thống"]
+  }
 }
 ```
 
@@ -247,9 +214,9 @@ POST /auth/reset-password
 
 ```json
 {
-    "token": "reset-token-from-email",
-    "password": "newpassword123",
-    "confirmPassword": "newpassword123"
+  "token": "reset-token-from-email",
+  "password": "newpassword123",
+  "confirmPassword": "newpassword123"
 }
 ```
 
@@ -257,7 +224,7 @@ POST /auth/reset-password
 
 ```json
 {
-    "message": "Đặt lại mật khẩu thành công"
+  "message": "Đặt lại mật khẩu thành công"
 }
 ```
 
@@ -265,12 +232,12 @@ POST /auth/reset-password
 
 ```json
 {
-    "message": "Đặt lại mật khẩu thất bại",
-    "code": "RESET_PASSWORD_FAILED",
-    "details": {
-        "token": ["Token không hợp lệ hoặc đã hết hạn"],
-        "password": ["Mật khẩu phải có ít nhất 8 ký tự"]
-    }
+  "message": "Đặt lại mật khẩu thất bại",
+  "code": "RESET_PASSWORD_FAILED",
+  "details": {
+    "token": ["Token không hợp lệ hoặc đã hết hạn"],
+    "password": ["Mật khẩu phải có ít nhất 8 ký tự"]
+  }
 }
 ```
 
@@ -284,7 +251,7 @@ POST /auth/verify-email
 
 ```json
 {
-    "token": "verify-token-from-email"
+  "token": "verify-token-from-email"
 }
 ```
 
@@ -292,7 +259,7 @@ POST /auth/verify-email
 
 ```json
 {
-    "message": "Xác thực email thành công"
+  "message": "Xác thực email thành công"
 }
 ```
 
@@ -300,20 +267,20 @@ POST /auth/verify-email
 
 ```json
 {
-    "message": "Xác thực email thất bại",
-    "code": "VERIFY_EMAIL_FAILED",
-    "details": {
-        "token": ["Token không hợp lệ hoặc đã hết hạn"]
-    }
+  "message": "Xác thực email thất bại",
+  "code": "VERIFY_EMAIL_FAILED",
+  "details": {
+    "token": ["Token không hợp lệ hoặc đã hết hạn"]
+  }
 }
 ```
 
 ### 👥 User APIs
 
-#### 1. Get Profile
+#### 1. Get User Info
 
 ```http
-GET /users/profile
+GET /users/me
 Headers: Authorization: Bearer {access_token}
 ```
 
@@ -321,15 +288,15 @@ Headers: Authorization: Bearer {access_token}
 
 ```json
 {
-    "id": "uuid-string",
-    "email": "user@example.com",
-    "name": "John Doe",
-    "avatar": "https://example.com/avatar.jpg",
-    "theme": "light",
-    "language": "en",
-    "role": "user",
-    "createdAt": "2024-01-01T00:00:00Z",
-    "updatedAt": "2024-01-01T00:00:00Z"
+  "id": "uuid-string",
+  "email": "user@example.com",
+  "name": "John Doe",
+  "avatar": "https://example.com/avatar.jpg",
+  "theme": "light",
+  "language": "en",
+  "role": "user",
+  "createdAt": "2024-01-01T00:00:00Z",
+  "updatedAt": "2024-01-01T00:00:00Z"
 }
 ```
 
@@ -337,15 +304,15 @@ Headers: Authorization: Bearer {access_token}
 
 ```json
 {
-    "message": "Không thể lấy thông tin profile",
-    "code": "GET_PROFILE_FAILED"
+  "message": "Không thể lấy thông tin profile",
+  "code": "GET_PROFILE_FAILED"
 }
 ```
 
-#### 2. Update Profile
+#### 2. Update User Info
 
 ```http
-PUT /users/profile
+PUT /users/me
 Headers: Authorization: Bearer {access_token}
 ```
 
@@ -353,10 +320,10 @@ Headers: Authorization: Bearer {access_token}
 
 ```json
 {
-    "name": "Updated Name",
-    "avatar": "https://example.com/new-avatar.jpg",
-    "theme": "light",
-    "language": "en"
+  "name": "Updated Name",
+  "avatar": "https://example.com/new-avatar.jpg",
+  "theme": "light",
+  "language": "en"
 }
 ```
 
@@ -364,18 +331,18 @@ Headers: Authorization: Bearer {access_token}
 
 ```json
 {
-    "user": {
-        "id": "uuid-string",
-        "email": "user@example.com",
-        "name": "Updated Name",
-        "avatar": "https://example.com/new-avatar.jpg",
-        "theme": "light",
-        "language": "en",
-        "role": "user",
-        "createdAt": "2024-01-01T00:00:00Z",
-        "updatedAt": "2024-01-01T00:00:00Z"
-    },
-    "message": "Cập nhật profile thành công"
+  "user": {
+    "id": "uuid-string",
+    "email": "user@example.com",
+    "name": "Updated Name",
+    "avatar": "https://example.com/new-avatar.jpg",
+    "theme": "light",
+    "language": "en",
+    "role": "user",
+    "createdAt": "2024-01-01T00:00:00Z",
+    "updatedAt": "2024-01-01T00:00:00Z"
+  },
+  "message": "Cập nhật profile thành công"
 }
 ```
 
@@ -383,12 +350,12 @@ Headers: Authorization: Bearer {access_token}
 
 ```json
 {
-    "message": "Cập nhật profile thất bại",
-    "code": "UPDATE_PROFILE_FAILED",
-    "details": {
-        "name": ["Tên không được để trống"],
-        "avatar": ["Avatar không hợp lệ"]
-    }
+  "message": "Cập nhật profile thất bại",
+  "code": "UPDATE_PROFILE_FAILED",
+  "details": {
+    "name": ["Tên không được để trống"],
+    "avatar": ["Avatar không hợp lệ"]
+  }
 }
 ```
 
@@ -403,9 +370,9 @@ Headers: Authorization: Bearer {access_token}
 
 ```json
 {
-    "oldPassword": "oldpassword123",
-    "newPassword": "newpassword123",
-    "confirmPassword": "newpassword123"
+  "oldPassword": "oldpassword123",
+  "newPassword": "newpassword123",
+  "confirmPassword": "newpassword123"
 }
 ```
 
@@ -413,7 +380,7 @@ Headers: Authorization: Bearer {access_token}
 
 ```json
 {
-    "message": "Thay đổi mật khẩu thành công"
+  "message": "Thay đổi mật khẩu thành công"
 }
 ```
 
@@ -421,12 +388,12 @@ Headers: Authorization: Bearer {access_token}
 
 ```json
 {
-    "message": "Thay đổi mật khẩu thất bại",
-    "code": "CHANGE_PASSWORD_FAILED",
-    "details": {
-        "oldPassword": ["Mật khẩu cũ không đúng"],
-        "newPassword": ["Mật khẩu mới phải có ít nhất 8 ký tự"]
-    }
+  "message": "Thay đổi mật khẩu thất bại",
+  "code": "CHANGE_PASSWORD_FAILED",
+  "details": {
+    "oldPassword": ["Mật khẩu cũ không đúng"],
+    "newPassword": ["Mật khẩu mới phải có ít nhất 8 ký tự"]
+  }
 }
 ```
 
@@ -442,7 +409,7 @@ Content-Type: multipart/form-data
 
 ```json
 {
-    "avatar": "file-object"
+  "avatar": "file-object"
 }
 ```
 
@@ -450,7 +417,7 @@ Content-Type: multipart/form-data
 
 ```json
 {
-    "avatarUrl": "https://example.com/avatars/new-avatar.jpg"
+  "avatarUrl": "https://example.com/avatars/new-avatar.jpg"
 }
 ```
 
@@ -458,11 +425,11 @@ Content-Type: multipart/form-data
 
 ```json
 {
-    "message": "Upload avatar thất bại",
-    "code": "UPLOAD_AVATAR_FAILED",
-    "details": {
-        "avatar": ["File không hợp lệ", "Kích thước file quá lớn"]
-    }
+  "message": "Upload avatar thất bại",
+  "code": "UPLOAD_AVATAR_FAILED",
+  "details": {
+    "avatar": ["File không hợp lệ", "Kích thước file quá lớn"]
+  }
 }
 ```
 
@@ -477,7 +444,7 @@ Headers: Authorization: Bearer {access_token}
 
 ```json
 {
-    "message": "Xóa avatar thành công"
+  "message": "Xóa avatar thành công"
 }
 ```
 
@@ -485,8 +452,8 @@ Headers: Authorization: Bearer {access_token}
 
 ```json
 {
-    "message": "Xóa avatar thất bại",
-    "code": "DELETE_AVATAR_FAILED"
+  "message": "Xóa avatar thất bại",
+  "code": "DELETE_AVATAR_FAILED"
 }
 ```
 
@@ -501,7 +468,7 @@ Headers: Authorization: Bearer {access_token}
 
 ```json
 {
-    "theme": "dark"
+  "theme": "dark"
 }
 ```
 
@@ -509,15 +476,15 @@ Headers: Authorization: Bearer {access_token}
 
 ```json
 {
-    "id": "uuid-string",
-    "email": "user@example.com",
-    "name": "John Doe",
-    "avatar": "https://example.com/avatar.jpg",
-    "theme": "dark",
-    "language": "en",
-    "role": "user",
-    "createdAt": "2024-01-01T00:00:00Z",
-    "updatedAt": "2024-01-01T00:00:00Z"
+  "id": "uuid-string",
+  "email": "user@example.com",
+  "name": "John Doe",
+  "avatar": "https://example.com/avatar.jpg",
+  "theme": "dark",
+  "language": "en",
+  "role": "user",
+  "createdAt": "2024-01-01T00:00:00Z",
+  "updatedAt": "2024-01-01T00:00:00Z"
 }
 ```
 
@@ -525,11 +492,11 @@ Headers: Authorization: Bearer {access_token}
 
 ```json
 {
-    "message": "Cập nhật theme thất bại",
-    "code": "UPDATE_THEME_FAILED",
-    "details": {
-        "theme": ["Theme phải là 'light', 'dark' hoặc 'system'"]
-    }
+  "message": "Cập nhật theme thất bại",
+  "code": "UPDATE_THEME_FAILED",
+  "details": {
+    "theme": ["Theme phải là 'light', 'dark' hoặc 'system'"]
+  }
 }
 ```
 
@@ -544,7 +511,7 @@ Headers: Authorization: Bearer {access_token}
 
 ```json
 {
-    "language": "vi"
+  "language": "vi"
 }
 ```
 
@@ -552,15 +519,15 @@ Headers: Authorization: Bearer {access_token}
 
 ```json
 {
-    "id": "uuid-string",
-    "email": "user@example.com",
-    "name": "John Doe",
-    "avatar": "https://example.com/avatar.jpg",
-    "theme": "light",
-    "language": "vi",
-    "role": "user",
-    "createdAt": "2024-01-01T00:00:00Z",
-    "updatedAt": "2024-01-01T00:00:00Z"
+  "id": "uuid-string",
+  "email": "user@example.com",
+  "name": "John Doe",
+  "avatar": "https://example.com/avatar.jpg",
+  "theme": "light",
+  "language": "vi",
+  "role": "user",
+  "createdAt": "2024-01-01T00:00:00Z",
+  "updatedAt": "2024-01-01T00:00:00Z"
 }
 ```
 
@@ -568,11 +535,11 @@ Headers: Authorization: Bearer {access_token}
 
 ```json
 {
-    "message": "Cập nhật ngôn ngữ thất bại",
-    "code": "UPDATE_LANGUAGE_FAILED",
-    "details": {
-        "language": ["Ngôn ngữ phải là 'vi' hoặc 'en'"]
-    }
+  "message": "Cập nhật ngôn ngữ thất bại",
+  "code": "UPDATE_LANGUAGE_FAILED",
+  "details": {
+    "language": ["Ngôn ngữ phải là 'vi' hoặc 'en'"]
+  }
 }
 ```
 
@@ -593,11 +560,11 @@ Tất cả API sẽ trả về HTTP status codes phù hợp:
 
 ```json
 {
-    "message": "Mô tả lỗi bằng tiếng Việt",
-    "code": "ERROR_CODE",
-    "details": {
-        // Optional - chi tiết lỗi validation
-    }
+  "message": "Mô tả lỗi bằng tiếng Việt",
+  "code": "ERROR_CODE",
+  "details": {
+    // Optional - chi tiết lỗi validation
+  }
 }
 ```
 

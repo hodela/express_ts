@@ -1,5 +1,5 @@
 import { Request, Response, NextFunction } from 'express';
-import { logger } from '../config/logger';
+import { logError } from '../config/logger';
 
 export interface CustomError extends Error {
   statusCode?: number;
@@ -15,14 +15,9 @@ export const errorHandler = (
 ) => {
   let { statusCode = 500, message } = error;
 
-  // Log error
-  logger.error({
-    message: error.message,
-    stack: error.stack,
-    url: req.url,
-    method: req.method,
-    ip: req.ip,
-  });
+  // Log error với context đẹp
+  const context = `${req.method} ${req.url} - IP: ${req.ip}`;
+  logError(error, context);
 
   // Prisma errors
   if (error.message.includes('Unique constraint failed')) {

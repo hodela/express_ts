@@ -131,45 +131,6 @@ describe('Auth Endpoints', () => {
     });
   });
 
-  describe('GET /api/auth/me', () => {
-    it('should get current user with valid token', async () => {
-      // Register and login to get token
-      const userData = {
-        name: 'Test User',
-        email: 'test.me@example.com',
-        password: 'password123',
-        confirmPassword: 'password123',
-      };
-
-      await request(app).post('/api/auth/register').send(userData);
-
-      const loginResponse = await request(app).post('/api/auth/login').send({
-        email: userData.email,
-        password: userData.password,
-      });
-
-      const token = loginResponse.body.accessToken;
-
-      const response = await request(app)
-        .get('/api/auth/me')
-        .set('Authorization', `Bearer ${token}`)
-        .expect(200);
-
-      expect(response.body).toHaveProperty('id');
-      expect(response.body).toHaveProperty('email', userData.email);
-      expect(response.body).toHaveProperty('name', userData.name);
-      expect(response.body).toHaveProperty('theme', 'light');
-      expect(response.body).toHaveProperty('language', 'en');
-    });
-
-    it('should return error without token', async () => {
-      const response = await request(app).get('/api/auth/me').expect(401);
-
-      expect(response.body).toHaveProperty('message', 'No token provided');
-      expect(response.body).toHaveProperty('code', 'UNAUTHORIZED');
-    });
-  });
-
   describe('POST /api/auth/logout', () => {
     it('should logout successfully with valid token', async () => {
       // Register and login to get tokens

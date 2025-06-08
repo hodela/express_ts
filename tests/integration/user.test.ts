@@ -43,10 +43,10 @@ describe('User Endpoints', () => {
     await closeDatabase();
   });
 
-  describe('GET /api/users/profile', () => {
+  describe('GET /api/users/me', () => {
     it('should get user profile with valid token', async () => {
       const response = await request(app)
-        .get('/api/users/profile')
+        .get('/api/users/me')
         .set('Authorization', `Bearer ${accessToken}`)
         .expect(200);
 
@@ -58,14 +58,14 @@ describe('User Endpoints', () => {
     });
 
     it('should return error without token', async () => {
-      const response = await request(app).get('/api/users/profile').expect(401);
+      const response = await request(app).get('/api/users/me').expect(401);
 
       expect(response.body).toHaveProperty('message', 'No token provided');
       expect(response.body).toHaveProperty('code', 'UNAUTHORIZED');
     });
   });
 
-  describe('PUT /api/users/profile', () => {
+  describe('PUT /api/users/me', () => {
     it('should update user profile', async () => {
       const updateData = {
         name: 'Updated Name',
@@ -75,7 +75,7 @@ describe('User Endpoints', () => {
       };
 
       const response = await request(app)
-        .put('/api/users/profile')
+        .put('/api/users/me')
         .set('Authorization', `Bearer ${accessToken}`)
         .send(updateData)
         .expect(200);
@@ -96,7 +96,7 @@ describe('User Endpoints', () => {
       };
 
       const response = await request(app)
-        .put('/api/users/profile')
+        .put('/api/users/me')
         .set('Authorization', `Bearer ${accessToken}`)
         .send(invalidData)
         .expect(422);

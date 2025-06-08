@@ -29,28 +29,23 @@ jest.mock('../src/config/database', () => {
   };
 });
 
-// Only mock Winston logger (not database or bcrypt for integration tests)
-jest.mock('winston', () => ({
-  createLogger: jest.fn(() => ({
+// Only mock Pino logger (not database or bcrypt for integration tests)
+jest.mock('pino', () => {
+  const mockLogger: any = {
     info: jest.fn(),
     error: jest.fn(),
     warn: jest.fn(),
     debug: jest.fn(),
-  })),
-  format: {
-    combine: jest.fn(() => jest.fn()),
-    timestamp: jest.fn(() => jest.fn()),
-    printf: jest.fn(() => jest.fn()),
-    colorize: jest.fn(() => jest.fn()),
-    simple: jest.fn(() => jest.fn()),
-    json: jest.fn(() => jest.fn()),
-    errors: jest.fn(() => jest.fn()),
-  },
-  transports: {
-    Console: jest.fn(),
-    File: jest.fn(),
-  },
-}));
+    trace: jest.fn(),
+    fatal: jest.fn(),
+    child: jest.fn(),
+  };
+
+  // Make child return the same logger
+  mockLogger.child = jest.fn(() => mockLogger);
+
+  return jest.fn(() => mockLogger);
+});
 
 // Suppress console logs during testing
 const originalConsole = console;

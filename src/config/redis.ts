@@ -1,5 +1,5 @@
 import { createClient, RedisClientType } from 'redis';
-import { logger } from './logger';
+import { logSuccess, logError } from './logger';
 
 let redisClient: RedisClientType;
 
@@ -10,24 +10,24 @@ export const connectRedis = async () => {
     });
 
     redisClient.on('error', (err) => {
-      logger.error('Redis Client Error:', err);
+      logError(err as Error, 'Redis Client');
     });
 
     redisClient.on('connect', () => {
-      logger.info('Redis connected');
+      logSuccess('Redis connected');
     });
 
     redisClient.on('ready', () => {
-      logger.info('Redis ready');
+      logSuccess('Redis ready');
     });
 
     redisClient.on('end', () => {
-      logger.info('Redis connection ended');
+      logSuccess('Redis connection ended');
     });
 
     await redisClient.connect();
   } catch (error) {
-    logger.error('Redis connection failed:', error);
+    logError(error as Error, 'Redis Connection');
     throw error;
   }
 };
@@ -36,10 +36,10 @@ export const disconnectRedis = async () => {
   try {
     if (redisClient) {
       await redisClient.quit();
-      logger.info('Redis disconnected');
+      logSuccess('Redis disconnected');
     }
   } catch (error) {
-    logger.error('Redis disconnection failed:', error);
+    logError(error as Error, 'Redis Disconnection');
   }
 };
 
@@ -50,4 +50,4 @@ export const getRedisClient = (): RedisClientType => {
   return redisClient;
 };
 
-export { redisClient }; 
+export { redisClient };

@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from 'express';
 import { CustomError } from '../middlewares/error.middleware';
 import { UserService } from '../services/user.service';
+import { logSuccess, logError } from '../config/logger';
 
 export const getProfile = async (
   req: Request,
@@ -9,6 +10,10 @@ export const getProfile = async (
 ) => {
   try {
     if (!req.user) {
+      logError(
+        new Error('User not authenticated'),
+        'User Controller - Get Profile'
+      );
       return res.status(401).json({
         message: 'Không thể lấy thông tin profile',
         code: 'GET_PROFILE_FAILED',
@@ -17,8 +22,10 @@ export const getProfile = async (
 
     const user = await UserService.findById(req.user.id);
 
+    logSuccess('Profile retrieved successfully', { userId: req.user.id });
     res.json(user);
   } catch (error) {
+    logError(error as Error, 'User Controller - Get Profile');
     next(error);
   }
 };
@@ -30,6 +37,10 @@ export const updateProfile = async (
 ) => {
   try {
     if (!req.user) {
+      logError(
+        new Error('User not authenticated'),
+        'User Controller - Update Profile'
+      );
       return res.status(401).json({
         message: 'Cập nhật profile thất bại',
         code: 'UPDATE_PROFILE_FAILED',
@@ -45,11 +56,16 @@ export const updateProfile = async (
       language,
     });
 
+    logSuccess('Profile updated successfully', {
+      userId: req.user.id,
+      updatedFields: { name, avatar, theme, language },
+    });
     res.json({
       user: updatedUser,
       message: 'Cập nhật profile thành công',
     });
   } catch (error) {
+    logError(error as Error, 'User Controller - Update Profile');
     next(error);
   }
 };
@@ -61,6 +77,10 @@ export const changePassword = async (
 ) => {
   try {
     if (!req.user) {
+      logError(
+        new Error('User not authenticated'),
+        'User Controller - Change Password'
+      );
       return res.status(401).json({
         message: 'Thay đổi mật khẩu thất bại',
         code: 'CHANGE_PASSWORD_FAILED',
@@ -71,6 +91,10 @@ export const changePassword = async (
 
     // Check if passwords match
     if (newPassword !== confirmPassword) {
+      logError(
+        new Error('Password confirmation mismatch'),
+        'User Controller - Change Password'
+      );
       return res.status(400).json({
         message: 'Thay đổi mật khẩu thất bại',
         code: 'CHANGE_PASSWORD_FAILED',
@@ -83,11 +107,13 @@ export const changePassword = async (
     try {
       await UserService.changePassword(req.user.id, oldPassword, newPassword);
 
+      logSuccess('Password changed successfully', { userId: req.user.id });
       res.json({
         message: 'Thay đổi mật khẩu thành công',
       });
     } catch (error: any) {
       if (error.message === 'Old password is incorrect') {
+        logError(error, 'User Controller - Change Password');
         return res.status(400).json({
           message: 'Thay đổi mật khẩu thất bại',
           code: 'CHANGE_PASSWORD_FAILED',
@@ -99,6 +125,7 @@ export const changePassword = async (
       throw error;
     }
   } catch (error) {
+    logError(error as Error, 'User Controller - Change Password');
     next(error);
   }
 };
@@ -110,6 +137,10 @@ export const uploadAvatar = async (
 ) => {
   try {
     if (!req.user) {
+      logError(
+        new Error('User not authenticated'),
+        'User Controller - Upload Avatar'
+      );
       return res.status(401).json({
         message: 'Upload avatar thất bại',
         code: 'UPLOAD_AVATAR_FAILED',
@@ -124,10 +155,15 @@ export const uploadAvatar = async (
       avatar: avatarUrl,
     });
 
+    logSuccess('Avatar uploaded successfully', {
+      userId: req.user.id,
+      avatarUrl,
+    });
     res.json({
       avatarUrl,
     });
   } catch (error) {
+    logError(error as Error, 'User Controller - Upload Avatar');
     next(error);
   }
 };
@@ -139,6 +175,10 @@ export const deleteAvatar = async (
 ) => {
   try {
     if (!req.user) {
+      logError(
+        new Error('User not authenticated'),
+        'User Controller - Delete Avatar'
+      );
       return res.status(401).json({
         message: 'Xóa avatar thất bại',
         code: 'DELETE_AVATAR_FAILED',
@@ -149,10 +189,12 @@ export const deleteAvatar = async (
       avatar: null,
     });
 
+    logSuccess('Avatar deleted successfully', { userId: req.user.id });
     res.json({
       message: 'Xóa avatar thành công',
     });
   } catch (error) {
+    logError(error as Error, 'User Controller - Delete Avatar');
     next(error);
   }
 };
@@ -164,6 +206,10 @@ export const updateTheme = async (
 ) => {
   try {
     if (!req.user) {
+      logError(
+        new Error('User not authenticated'),
+        'User Controller - Update Theme'
+      );
       return res.status(401).json({
         message: 'Cập nhật theme thất bại',
         code: 'UPDATE_THEME_FAILED',
@@ -174,6 +220,10 @@ export const updateTheme = async (
 
     // Validate theme
     if (!['light', 'dark', 'system'].includes(theme)) {
+      logError(
+        new Error(`Invalid theme: ${theme}`),
+        'User Controller - Update Theme'
+      );
       return res.status(400).json({
         message: 'Cập nhật theme thất bại',
         code: 'UPDATE_THEME_FAILED',
@@ -185,8 +235,10 @@ export const updateTheme = async (
 
     const updatedUser = await UserService.updateById(req.user.id, { theme });
 
+    logSuccess('Theme updated successfully', { userId: req.user.id, theme });
     res.json(updatedUser);
   } catch (error) {
+    logError(error as Error, 'User Controller - Update Theme');
     next(error);
   }
 };
@@ -198,6 +250,10 @@ export const updateLanguage = async (
 ) => {
   try {
     if (!req.user) {
+      logError(
+        new Error('User not authenticated'),
+        'User Controller - Update Language'
+      );
       return res.status(401).json({
         message: 'Cập nhật ngôn ngữ thất bại',
         code: 'UPDATE_LANGUAGE_FAILED',
@@ -208,6 +264,10 @@ export const updateLanguage = async (
 
     // Validate language
     if (!['vi', 'en'].includes(language)) {
+      logError(
+        new Error(`Invalid language: ${language}`),
+        'User Controller - Update Language'
+      );
       return res.status(400).json({
         message: 'Cập nhật ngôn ngữ thất bại',
         code: 'UPDATE_LANGUAGE_FAILED',
@@ -219,8 +279,13 @@ export const updateLanguage = async (
 
     const updatedUser = await UserService.updateById(req.user.id, { language });
 
+    logSuccess('Language updated successfully', {
+      userId: req.user.id,
+      language,
+    });
     res.json(updatedUser);
   } catch (error) {
+    logError(error as Error, 'User Controller - Update Language');
     next(error);
   }
 };
@@ -241,11 +306,18 @@ export const getAllUsers = async (
       search,
     });
 
+    logSuccess('All users retrieved successfully', {
+      page,
+      limit,
+      search: search || 'none',
+      totalUsers: users.pagination.total,
+    });
     res.json({
       success: true,
       data: users,
     });
   } catch (error) {
+    logError(error as Error, 'User Controller - Get All Users');
     next(error);
   }
 };
@@ -259,11 +331,13 @@ export const getUserById = async (
     const { id } = req.params;
     const user = await UserService.findById(id);
 
+    logSuccess('User retrieved by ID successfully', { userId: id });
     res.json({
       success: true,
       data: { user },
     });
   } catch (error) {
+    logError(error as Error, 'User Controller - Get User By ID');
     next(error);
   }
 };
@@ -280,16 +354,22 @@ export const deleteUser = async (
     if (req.user && req.user.id === id) {
       const error: CustomError = new Error('Cannot delete your own account');
       error.statusCode = 400;
+      logError(error, 'User Controller - Delete User');
       throw error;
     }
 
     await UserService.deleteById(id);
 
+    logSuccess('User deleted by admin successfully', {
+      deletedUserId: id,
+      adminUserId: req.user?.id,
+    });
     res.json({
       success: true,
       message: 'User deleted successfully',
     });
   } catch (error) {
+    logError(error as Error, 'User Controller - Delete User');
     next(error);
   }
 };

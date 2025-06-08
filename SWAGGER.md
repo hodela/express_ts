@@ -18,7 +18,6 @@ http://localhost:3000/api-docs
 
 - **POST /api/auth/register** - Đăng ký tài khoản mới
 - **POST /api/auth/login** - Đăng nhập
-- **GET /api/auth/me** - Lấy thông tin người dùng hiện tại
 - **POST /api/auth/refresh** - Làm mới access token
 - **POST /api/auth/logout** - Đăng xuất
 - **POST /api/auth/forgot-password** - Quên mật khẩu
@@ -27,8 +26,8 @@ http://localhost:3000/api-docs
 
 ### User APIs (`/api/users`)
 
-- **GET /api/users/profile** - Lấy thông tin profile
-- **PUT /api/users/profile** - Cập nhật thông tin profile
+- **GET /api/users/me** - Lấy thông tin người dùng hiện tại
+- **PUT /api/users/me** - Cập nhật thông tin người dùng hiện tại
 - **PUT /api/users/change-password** - Đổi mật khẩu
 - **POST /api/users/upload-avatar** - Upload avatar
 - **DELETE /api/users/avatar** - Xóa avatar

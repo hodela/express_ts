@@ -5,6 +5,7 @@ import { prisma } from '../config/database';
 import { CustomError } from '../middlewares/error.middleware';
 import { AuthService } from '../services/auth.service';
 import { EmailService } from '../services/email.service';
+import { logSuccess, logError, logWarning } from '../config/logger';
 
 export const register = async (
   req: Request,
@@ -16,6 +17,10 @@ export const register = async (
 
     // Check if passwords match
     if (password !== confirmPassword) {
+      logError(
+        new Error('Password confirmation mismatch'),
+        'Auth Controller - Register'
+      );
       return res.status(400).json({
         message: 'Đăng ký thất bại',
         code: 'REGISTER_FAILED',
@@ -31,6 +36,7 @@ export const register = async (
     });
 
     if (existingUser) {
+      logWarning('Registration failed - Email already exists', { email });
       return res.status(400).json({
         message: 'Đăng ký thất bại',
         code: 'REGISTER_FAILED',
@@ -73,15 +79,23 @@ export const register = async (
     try {
       await EmailService.sendVerificationEmail(user.email, verificationToken);
     } catch (emailError) {
-      console.error('Failed to send verification email:', emailError);
+      logError(
+        emailError as Error,
+        'Auth Controller - Register - Email Service'
+      );
     }
 
+    logSuccess('User registered successfully', {
+      userId: user.id,
+      email: user.email,
+    });
     res.status(201).json({
       user,
       message: 'Đăng ký thành công',
       requiresVerification: true,
     });
   } catch (error) {
+    logError(error as Error, 'Auth Controller - Register');
     next(error);
   }
 };
@@ -100,6 +114,7 @@ export const login = async (
     });
 
     if (!user) {
+      logWarning('Login failed - User not found', { email });
       return res.status(401).json({
         message: 'Đăng nhập thất bại',
         code: 'LOGIN_FAILED',
@@ -112,6 +127,7 @@ export const login = async (
     // Check password
     const isValidPassword = await bcrypt.compare(password, user.password);
     if (!isValidPassword) {
+      logWarning('Login failed - Invalid password', { email, userId: user.id });
       return res.status(401).json({
         message: 'Đăng nhập thất bại',
         code: 'LOGIN_FAILED',
@@ -130,6 +146,10 @@ export const login = async (
       data: { lastLoginAt: new Date() },
     });
 
+    logSuccess('User logged in successfully', {
+      userId: user.id,
+      email: user.email,
+    });
     res.json({
       user: {
         id: user.id,
@@ -145,47 +165,7 @@ export const login = async (
       ...tokens,
     });
   } catch (error) {
-    next(error);
-  }
-};
-
-export const getMe = async (
-  req: Request,
-  res: Response,
-  next: NextFunction
-) => {
-  try {
-    if (!req.user) {
-      return res.status(401).json({
-        message: 'Không thể lấy thông tin user',
-        code: 'GET_USER_FAILED',
-      });
-    }
-
-    const user = await prisma.user.findUnique({
-      where: { id: req.user.id },
-      select: {
-        id: true,
-        email: true,
-        name: true,
-        avatar: true,
-        theme: true,
-        language: true,
-        role: true,
-        createdAt: true,
-        updatedAt: true,
-      },
-    });
-
-    if (!user) {
-      return res.status(401).json({
-        message: 'Không thể lấy thông tin user',
-        code: 'GET_USER_FAILED',
-      });
-    }
-
-    res.json(user);
-  } catch (error) {
+    logError(error as Error, 'Auth Controller - Login');
     next(error);
   }
 };
@@ -199,6 +179,10 @@ export const refreshToken = async (
     const { refreshToken: token } = req.body;
 
     if (!token) {
+      logError(
+        new Error('Refresh token not provided'),
+        'Auth Controller - Refresh Token'
+      );
       return res.status(401).json({
         message: 'Không thể làm mới token',
         code: 'REFRESH_TOKEN_FAILED',
@@ -211,6 +195,9 @@ export const refreshToken = async (
     // Validate refresh token
     const refreshTokenData = await AuthService.validateRefreshToken(token);
     if (!refreshTokenData) {
+      logWarning('Refresh token validation failed', {
+        token: token.substring(0, 10) + '...',
+      });
       return res.status(401).json({
         message: 'Không thể làm mới token',
         code: 'REFRESH_TOKEN_FAILED',
@@ -229,8 +216,12 @@ export const refreshToken = async (
       refreshTokenData.user.email
     );
 
+    logSuccess('Token refreshed successfully', {
+      userId: refreshTokenData.user.id,
+    });
     res.json(tokens);
   } catch (error) {
+    logError(error as Error, 'Auth Controller - Refresh Token');
     next(error);
   }
 };
@@ -246,15 +237,21 @@ export const logout = async (
     if (token) {
       try {
         await AuthService.revokeRefreshToken(token);
+        logSuccess('Refresh token revoked during logout');
       } catch (error) {
         // Token might not exist, which is fine
+        logWarning(
+          'Failed to revoke refresh token during logout - token might not exist'
+        );
       }
     }
 
+    logSuccess('User logged out successfully', { userId: req.user?.id });
     res.json({
       message: 'Đăng xuất thành công',
     });
   } catch (error) {
+    logError(error as Error, 'Auth Controller - Logout');
     next(error);
   }
 };
@@ -272,6 +269,7 @@ export const forgotPassword = async (
     });
 
     if (!user) {
+      logWarning('Forgot password failed - Email not found', { email });
       return res.status(400).json({
         message: 'Gửi email khôi phục thất bại',
         code: 'FORGOT_PASSWORD_FAILED',
@@ -298,13 +296,21 @@ export const forgotPassword = async (
     try {
       await EmailService.sendPasswordResetEmail(user.email, resetToken);
     } catch (emailError) {
-      console.error('Failed to send password reset email:', emailError);
+      logError(
+        emailError as Error,
+        'Auth Controller - Forgot Password - Email Service'
+      );
     }
 
+    logSuccess('Password reset email sent successfully', {
+      userId: user.id,
+      email,
+    });
     res.json({
       message: 'Email khôi phục mật khẩu đã được gửi',
     });
   } catch (error) {
+    logError(error as Error, 'Auth Controller - Forgot Password');
     next(error);
   }
 };
@@ -319,6 +325,10 @@ export const resetPassword = async (
 
     // Check if passwords match
     if (password !== confirmPassword) {
+      logError(
+        new Error('Password confirmation mismatch'),
+        'Auth Controller - Reset Password'
+      );
       return res.status(400).json({
         message: 'Đặt lại mật khẩu thất bại',
         code: 'RESET_PASSWORD_FAILED',
@@ -338,6 +348,9 @@ export const resetPassword = async (
     });
 
     if (!user) {
+      logWarning('Reset password failed - Invalid or expired token', {
+        token: token.substring(0, 10) + '...',
+      });
       return res.status(400).json({
         message: 'Đặt lại mật khẩu thất bại',
         code: 'RESET_PASSWORD_FAILED',
@@ -360,10 +373,12 @@ export const resetPassword = async (
       },
     });
 
+    logSuccess('Password reset successfully', { userId: user.id });
     res.json({
       message: 'Đặt lại mật khẩu thành công',
     });
   } catch (error) {
+    logError(error as Error, 'Auth Controller - Reset Password');
     next(error);
   }
 };
@@ -386,6 +401,9 @@ export const verifyEmail = async (
     });
 
     if (!user) {
+      logWarning('Email verification failed - Invalid or expired token', {
+        token: token.substring(0, 10) + '...',
+      });
       return res.status(400).json({
         message: 'Xác thực email thất bại',
         code: 'VERIFY_EMAIL_FAILED',
@@ -405,10 +423,15 @@ export const verifyEmail = async (
       },
     });
 
+    logSuccess('Email verified successfully', {
+      userId: user.id,
+      email: user.email,
+    });
     res.json({
       message: 'Xác thực email thành công',
     });
   } catch (error) {
+    logError(error as Error, 'Auth Controller - Verify Email');
     next(error);
   }
 };

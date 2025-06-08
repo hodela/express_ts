@@ -1,14 +1,17 @@
-import { logger } from '../config/logger';
+import { logSuccess, logError } from '../config/logger';
 
 export class EmailService {
-  static async sendPasswordResetEmail(email: string, resetToken: string): Promise<void> {
+  static async sendPasswordResetEmail(
+    email: string,
+    resetToken: string
+  ): Promise<void> {
     try {
       // In a real application, you would use a service like SendGrid, Mailgun, or AWS SES
       // For now, we'll just log the email details
-      
+
       const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
-      
-      logger.info('Password reset email would be sent:', {
+
+      logSuccess('Password reset email would be sent', {
         to: email,
         resetUrl,
         resetToken,
@@ -41,40 +44,45 @@ export class EmailService {
 
       await transporter.sendMail(mailOptions);
       */
-      
     } catch (error) {
-      logger.error('Failed to send password reset email:', error);
+      logError(error as Error, 'Email Service - Password Reset');
       throw error;
     }
   }
 
-  static async sendWelcomeEmail(email: string, firstName: string): Promise<void> {
+  static async sendWelcomeEmail(
+    email: string,
+    firstName: string
+  ): Promise<void> {
     try {
-      logger.info('Welcome email would be sent:', {
+      logSuccess('Welcome email would be sent', {
         to: email,
         firstName,
       });
 
       // Implementation would go here
     } catch (error) {
-      logger.error('Failed to send welcome email:', error);
+      logError(error as Error, 'Email Service - Welcome');
       throw error;
     }
   }
 
-  static async sendVerificationEmail(email: string, verificationToken: string): Promise<void> {
+  static async sendVerificationEmail(
+    email: string,
+    verificationToken: string
+  ): Promise<void> {
     try {
       const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
-      
-      logger.info('Verification email would be sent:', {
+
+      logSuccess('Verification email would be sent', {
         to: email,
         verificationUrl,
       });
 
       // Implementation would go here
     } catch (error) {
-      logger.error('Failed to send verification email:', error);
+      logError(error as Error, 'Email Service - Verification');
       throw error;
     }
   }
-} 
+}

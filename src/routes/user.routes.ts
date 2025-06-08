@@ -22,15 +22,15 @@ router.use(authenticate);
 
 /**
  * @swagger
- * /api/users/profile:
+ * /api/users/me:
  *   get:
- *     summary: Lấy thông tin profile người dùng hiện tại
+ *     summary: Lấy thông tin người dùng hiện tại
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
- *         description: Thông tin profile người dùng
+ *         description: Thông tin người dùng hiện tại
  *         content:
  *           application/json:
  *             schema:
@@ -43,13 +43,13 @@ router.use(authenticate);
  *               $ref: '#/components/schemas/Error'
  */
 // Get current user profile
-router.get('/profile', getProfile);
+router.get('/me', getProfile);
 
 /**
  * @swagger
- * /api/users/profile:
+ * /api/users/me:
  *   put:
- *     summary: Cập nhật thông tin profile
+ *     summary: Cập nhật thông tin người dùng hiện tại
  *     tags: [User]
  *     security:
  *       - bearerAuth: []
@@ -97,7 +97,7 @@ router.get('/profile', getProfile);
  */
 // Update current user profile
 router.put(
-  '/profile',
+  '/me',
   validate([
     body('name').optional().notEmpty().withMessage('Tên không được để trống'),
     body('avatar').optional().isURL().withMessage('Avatar không hợp lệ'),

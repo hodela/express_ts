@@ -16,23 +16,11 @@ jest.mock('../src/config/database', () => ({
   prisma: createMockPrisma(),
 }));
 
-// Mock Winston logger with proper format functions
-jest.mock('winston', () => ({
-  createLogger: jest.fn(() => createMockLogger()),
-  format: {
-    combine: jest.fn(() => jest.fn()),
-    timestamp: jest.fn(() => jest.fn()),
-    printf: jest.fn(() => jest.fn()),
-    colorize: jest.fn(() => jest.fn()),
-    simple: jest.fn(() => jest.fn()),
-    json: jest.fn(() => jest.fn()),
-    errors: jest.fn(() => jest.fn()), // Fix for winston errors format
-  },
-  transports: {
-    Console: jest.fn(),
-    File: jest.fn(),
-  },
-}));
+// Mock Pino logger
+jest.mock('pino', () => {
+  const mockLogger = createMockLogger();
+  return jest.fn(() => mockLogger);
+});
 
 // Mock bcryptjs
 jest.mock('bcryptjs', () => ({

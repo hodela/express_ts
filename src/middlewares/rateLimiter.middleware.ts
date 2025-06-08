@@ -1,5 +1,5 @@
 import rateLimit from 'express-rate-limit';
-import { logger } from '../config/logger';
+import { logWarning } from '../config/logger';
 
 // Skip rate limiting in test environment
 const skipRateLimit = process.env.NODE_ENV === 'test';
@@ -18,7 +18,7 @@ export const generalLimiter = rateLimit({
   standardHeaders: true, // Return rate limit info in the `RateLimit-*` headers
   legacyHeaders: false, // Disable the `X-RateLimit-*` headers
   handler: (req, res) => {
-    logger.warn(`Rate limit exceeded for IP: ${req.ip}`);
+    logWarning(`Rate limit exceeded for IP: ${req.ip}`);
     res.status(429).json({
       success: false,
       error: {
@@ -41,7 +41,7 @@ export const authLimiter = rateLimit({
   },
   skipSuccessfulRequests: true, // Don't count successful requests
   handler: (req, res) => {
-    logger.warn(`Auth rate limit exceeded for IP: ${req.ip}`);
+    logWarning(`Auth rate limit exceeded for IP: ${req.ip}`);
     res.status(429).json({
       success: false,
       error: {

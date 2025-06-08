@@ -3,7 +3,6 @@ import { body } from 'express-validator';
 import {
   register,
   login,
-  getMe,
   refreshToken,
   logout,
   forgotPassword,
@@ -133,31 +132,6 @@ router.post(
   ]),
   login
 );
-
-/**
- * @swagger
- * /api/auth/me:
- *   get:
- *     summary: Lấy thông tin người dùng hiện tại
- *     tags: [Authentication]
- *     security:
- *       - bearerAuth: []
- *     responses:
- *       200:
- *         description: Thông tin người dùng
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/User'
- *       401:
- *         description: Chưa xác thực
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/Error'
- */
-// Get current user
-router.get('/me', authenticate, getMe);
 
 /**
  * @swagger

@@ -18,12 +18,22 @@ export const createMockPrisma = () => ({
   $transaction: jest.fn(),
 });
 
-export const createMockLogger = () => ({
-  info: jest.fn(),
-  error: jest.fn(),
-  warn: jest.fn(),
-  debug: jest.fn(),
-});
+export const createMockLogger = () => {
+  const mockLogger: any = {
+    info: jest.fn(),
+    error: jest.fn(),
+    warn: jest.fn(),
+    debug: jest.fn(),
+    trace: jest.fn(),
+    fatal: jest.fn(),
+    child: jest.fn(),
+  };
+
+  // Make child return the same logger
+  mockLogger.child = jest.fn(() => mockLogger);
+
+  return mockLogger;
+};
 
 export const mockUser = {
   id: 'test-user-id',
