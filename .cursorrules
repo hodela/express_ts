@@ -1,0 +1,221 @@
+# Express API Project Rules
+
+## Project Overview
+
+This is a production-ready Express.js API using TypeScript, PostgreSQL with Prisma ORM, JWT authentication, and Swagger documentation.
+
+## Tech Stack
+
+- Node.js (LTS version)
+- Express.js with TypeScript
+- PostgreSQL database
+- Prisma ORM
+- JWT for authentication
+- Swagger/OpenAPI for documentation
+- Winston for logging
+- Jest & Supertest for testing
+
+## Code Style and Standards
+
+### TypeScript
+
+- Use strict TypeScript configuration
+- Always define explicit return types for functions
+- Use interfaces for object shapes, types for unions/primitives
+- Avoid using `any` type - use `unknown` if type is truly unknown
+- Enable strict null checks
+
+### Naming Conventions
+
+- Files: kebab-case (e.g., user.controller.ts, auth.middleware.ts)
+- Classes: PascalCase
+- Interfaces: PascalCase with "I" prefix (e.g., IUser, IAuthRequest)
+- Functions/Methods: camelCase
+- Constants: UPPER_SNAKE_CASE
+- Environment variables: UPPER_SNAKE_CASE
+
+### Project Structure
+
+```
+src/
+├── config/       # Configuration files (database, logger, swagger)
+├── controllers/  # Route controllers (thin, delegate to services)
+├── middlewares/  # Express middlewares
+├── models/       # Prisma models and types
+├── routes/       # Route definitions
+├── services/     # Business logic layer
+├── utils/        # Helper functions and utilities
+├── types/        # TypeScript type definitions
+├── app.ts        # Express app setup
+└── server.ts     # Server entry point
+```
+
+### Best Practices
+
+#### Controllers
+
+- Keep controllers thin - only handle HTTP logic
+- Always validate input using express-validator
+- Delegate business logic to services
+- Return consistent response format:
+
+```typescript
+{
+  success: boolean;
+  data?: any;
+  error?: string;
+  message?: string;
+}
+```
+
+#### Services
+
+- Contain all business logic
+- Should be independent of Express (no req/res)
+- Handle database transactions
+- Throw custom errors for error cases
+
+#### Error Handling
+
+- Use custom error classes extending Error
+- Always use try-catch in async functions
+- Let errors bubble up to error middleware
+- Log errors with appropriate levels (error, warn, info)
+
+#### Database/Prisma
+
+- Always use Prisma Client types
+- Use transactions for multiple related operations
+- Include proper indexes in schema
+- Use select to avoid over-fetching data
+- Handle Prisma-specific errors appropriately
+
+#### Authentication & Security
+
+- Store passwords using bcrypt (min 10 rounds)
+- Use JWT with appropriate expiration
+- Implement refresh token mechanism
+- Validate all inputs
+- Use parameterized queries (Prisma handles this)
+- Implement rate limiting on sensitive endpoints
+
+#### API Design
+
+- Follow RESTful conventions
+- Use proper HTTP status codes
+- Version your API (/api)
+- Use plural nouns for resources
+- Implement pagination for list endpoints
+- Use query parameters for filtering/sorting
+
+#### Testing
+
+- Write unit tests for services
+- Write integration tests for API endpoints
+- Use fixtures for test data
+- Mock external dependencies
+- Aim for >80% code coverage
+
+#### Environment Variables
+
+- Never commit .env files
+- Always provide .env.example
+- Validate required env vars on startup
+- Use strong typing for env vars
+
+#### Logging
+
+- Use structured logging with Winston
+- Include request ID in logs
+- Log appropriate levels (error, warn, info, debug)
+- Don't log sensitive information
+
+#### Documentation
+
+- Document all API endpoints with Swagger
+- Include request/response examples
+- Document error responses
+- Keep README.md updated
+
+### Code Examples
+
+#### Controller Example:
+
+```typescript
+export const getUser = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { id } = req.params;
+    const user = await userService.findById(id);
+
+    res.json({
+      success: true,
+      data: user,
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+```
+
+#### Service Example:
+
+```typescript
+export const findById = async (id: string): Promise<User> => {
+  const user = await prisma.user.findUnique({
+    where: { id },
+    select: {
+      id: true,
+      email: true,
+      name: true,
+      createdAt: true,
+    },
+  });
+
+  if (!user) {
+    throw new NotFoundError('User not found');
+  }
+
+  return user;
+};
+```
+
+### Git Commit Conventions
+
+- Use conventional commits (feat:, fix:, docs:, etc.)
+- Keep commits atomic and focused
+- Write clear commit messages
+
+### Performance Considerations
+
+- Use pagination for large datasets
+- Implement caching with Redis where appropriate
+- Use database indexes effectively
+- Minimize N+1 queries with Prisma includes
+- Use compression middleware
+
+### Security Checklist
+
+- [ ] Input validation on all endpoints
+- [ ] Authentication required where needed
+- [ ] Rate limiting implemented
+- [ ] CORS configured properly
+- [ ] Helmet.js configured
+- [ ] SQL injection prevention (Prisma handles)
+- [ ] XSS prevention
+- [ ] Sensitive data not logged
+- [ ] HTTPS only in production
+
+## DO NOT
+
+- Don't use `var` - use `const` or `let`
+- Don't use callbacks - use async/await
+- Don't store sensitive data in JWT
+- Don't use synchronous file operations
+- Don't mutate request/response objects
+- Don't use console.log - use logger
+- Don't hardcode configuration values
+- Don't expose internal error details to clients
