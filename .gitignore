@@ -97,3 +97,7 @@ Thumbs.db
 
 # Redis dump
 dump.rdb 
+
+# Uploaded files (keep directory structure but ignore files)
+src/assets/upload/*
+!src/assets/upload/.gitkeep

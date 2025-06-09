@@ -1,49 +1,48 @@
+import * as React from 'react';
+import { render } from '@react-email/render';
 import { logSuccess, logError } from '../config/logger';
+import { resend, emailConfig } from '../config/resend';
+import { getEmailMessages } from '../locales';
+import { PasswordResetEmail } from '../templates/emails/PasswordResetEmail';
+import { WelcomeEmail } from '../templates/emails/WelcomeEmail';
+import { EmailVerificationEmail } from '../templates/emails/EmailVerificationEmail';
 
 export class EmailService {
   static async sendPasswordResetEmail(
     email: string,
-    resetToken: string
+    resetToken: string,
+    language: string = 'en'
   ): Promise<void> {
     try {
-      // In a real application, you would use a service like SendGrid, Mailgun, or AWS SES
-      // For now, we'll just log the email details
+      const resetUrl = `${emailConfig.frontendUrl}/auth/reset-password?token=${resetToken}`;
+      const messages = getEmailMessages(language);
 
-      const resetUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/reset-password?token=${resetToken}`;
+      const emailHtml = await render(
+        React.createElement(PasswordResetEmail, {
+          resetUrl,
+          language,
+          companyName: emailConfig.companyName,
+          companyLogo: emailConfig.companyLogo,
+        })
+      );
 
-      logSuccess('Password reset email would be sent', {
+      const { data, error } = await resend.emails.send({
+        from: emailConfig.from,
+        to: [email],
+        subject: messages.passwordReset.subject,
+        html: emailHtml,
+      });
+
+      if (error) {
+        throw new Error(`Resend error: ${error.message}`);
+      }
+
+      logSuccess('Password reset email sent successfully', {
         to: email,
         resetUrl,
-        resetToken,
+        emailId: data?.id,
+        language,
       });
-
-      // Example implementation with nodemailer (commented out)
-      /*
-      const transporter = nodemailer.createTransporter({
-        host: process.env.SMTP_HOST,
-        port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: false,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      });
-
-      const mailOptions = {
-        from: process.env.SMTP_USER,
-        to: email,
-        subject: 'Password Reset Request',
-        html: `
-          <h1>Password Reset Request</h1>
-          <p>You requested a password reset. Click the link below to reset your password:</p>
-          <a href="${resetUrl}">Reset Password</a>
-          <p>This link will expire in 10 minutes.</p>
-          <p>If you didn't request this, please ignore this email.</p>
-        `,
-      };
-
-      await transporter.sendMail(mailOptions);
-      */
     } catch (error) {
       logError(error as Error, 'Email Service - Password Reset');
       throw error;
@@ -52,15 +51,40 @@ export class EmailService {
 
   static async sendWelcomeEmail(
     email: string,
-    firstName: string
+    firstName: string,
+    language: string = 'en',
+    dashboardUrl?: string
   ): Promise<void> {
     try {
-      logSuccess('Welcome email would be sent', {
-        to: email,
-        firstName,
+      const messages = getEmailMessages(language);
+
+      const emailHtml = await render(
+        React.createElement(WelcomeEmail, {
+          firstName,
+          dashboardUrl,
+          language,
+          companyName: emailConfig.companyName,
+          companyLogo: emailConfig.companyLogo,
+        })
+      );
+
+      const { data, error } = await resend.emails.send({
+        from: emailConfig.from,
+        to: [email],
+        subject: messages.welcome.subject,
+        html: emailHtml,
       });
 
-      // Implementation would go here
+      if (error) {
+        throw new Error(`Resend error: ${error.message}`);
+      }
+
+      logSuccess('Welcome email sent successfully', {
+        to: email,
+        firstName,
+        emailId: data?.id,
+        language,
+      });
     } catch (error) {
       logError(error as Error, 'Email Service - Welcome');
       throw error;
@@ -69,17 +93,39 @@ export class EmailService {
 
   static async sendVerificationEmail(
     email: string,
-    verificationToken: string
+    verificationToken: string,
+    language: string = 'en'
   ): Promise<void> {
     try {
-      const verificationUrl = `${process.env.FRONTEND_URL || 'http://localhost:3000'}/verify-email?token=${verificationToken}`;
+      const verificationUrl = `${emailConfig.frontendUrl}/auth/verify-email?token=${verificationToken}`;
+      const messages = getEmailMessages(language);
 
-      logSuccess('Verification email would be sent', {
-        to: email,
-        verificationUrl,
+      const emailHtml = await render(
+        React.createElement(EmailVerificationEmail, {
+          verificationUrl,
+          language,
+          companyName: emailConfig.companyName,
+          companyLogo: emailConfig.companyLogo,
+        })
+      );
+
+      const { data, error } = await resend.emails.send({
+        from: emailConfig.from,
+        to: [email],
+        subject: messages.emailVerification.subject,
+        html: emailHtml,
       });
 
-      // Implementation would go here
+      if (error) {
+        throw new Error(`Resend error: ${error.message}`);
+      }
+
+      logSuccess('Email verification sent successfully', {
+        to: email,
+        verificationUrl,
+        emailId: data?.id,
+        language,
+      });
     } catch (error) {
       logError(error as Error, 'Email Service - Verification');
       throw error;

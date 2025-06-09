@@ -63,6 +63,10 @@ const options = {
               enum: ['user', 'admin'],
               description: 'User role',
             },
+            isVerified: {
+              type: 'boolean',
+              description: 'User verification status',
+            },
             createdAt: {
               type: 'string',
               format: 'date-time',

@@ -11,9 +11,14 @@ import {
   getAllUsers,
   getUserById,
   deleteUser,
+  deleteAccount,
 } from '../controllers/user.controller';
 import { authenticate, authorize } from '../middlewares/auth.middleware';
 import { validate } from '../middlewares/validation.middleware';
+import {
+  uploadSingle,
+  validateUploadedFile,
+} from '../middlewares/upload.middleware';
 
 const router = Router();
 
@@ -137,8 +142,8 @@ router.put(
  *                 description: Mật khẩu cũ
  *               newPassword:
  *                 type: string
- *                 minLength: 8
- *                 description: Mật khẩu mới (ít nhất 8 ký tự)
+ *                 minLength: 6
+ *                 description: Mật khẩu mới (ít nhất 6 ký tự)
  *               confirmPassword:
  *                 type: string
  *                 description: Xác nhận mật khẩu mới
@@ -173,8 +178,8 @@ router.put(
       .notEmpty()
       .withMessage('Mật khẩu cũ không được để trống'),
     body('newPassword')
-      .isLength({ min: 8 })
-      .withMessage('Mật khẩu mới phải có ít nhất 8 ký tự'),
+      .isLength({ min: 6 })
+      .withMessage('Mật khẩu mới phải có ít nhất 6 ký tự'),
     body('confirmPassword')
       .notEmpty()
       .withMessage('Mật khẩu xác nhận không được để trống'),
@@ -227,7 +232,12 @@ router.put(
  *               $ref: '#/components/schemas/Error'
  */
 // Upload avatar
-router.post('/upload-avatar', uploadAvatar);
+router.post(
+  '/upload-avatar',
+  uploadSingle('avatar'),
+  validateUploadedFile,
+  uploadAvatar
+);
 
 /**
  * @swagger
@@ -359,6 +369,62 @@ router.patch(
       .withMessage("Ngôn ngữ phải là 'vi' hoặc 'en'"),
   ]),
   updateLanguage
+);
+
+/**
+ * @swagger
+ * /api/users/delete-account:
+ *   delete:
+ *     summary: Xóa tài khoản của người dùng hiện tại (xóa cứng)
+ *     tags: [User]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - password
+ *             properties:
+ *               password:
+ *                 type: string
+ *                 description: Mật khẩu hiện tại để xác nhận
+ *     responses:
+ *       200:
+ *         description: Xóa tài khoản thành công
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 success:
+ *                   type: boolean
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Dữ liệu không hợp lệ hoặc mật khẩu không đúng
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ *       401:
+ *         description: Chưa xác thực
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+// Delete current user account
+router.delete(
+  '/delete-account',
+  validate([
+    body('password')
+      .notEmpty()
+      .withMessage('Mật khẩu là bắt buộc để xóa tài khoản'),
+  ]),
+  deleteAccount
 );
 
 /**

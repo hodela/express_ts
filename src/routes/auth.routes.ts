@@ -8,6 +8,7 @@ import {
   forgotPassword,
   resetPassword,
   verifyEmail,
+  resendVerification,
 } from '../controllers/auth.controller';
 import { validate } from '../middlewares/validation.middleware';
 import { authLimiter } from '../middlewares/rateLimiter.middleware';
@@ -42,8 +43,8 @@ const router = Router();
  *                 description: Email người dùng
  *               password:
  *                 type: string
- *                 minLength: 8
- *                 description: Mật khẩu (ít nhất 8 ký tự)
+ *                 minLength: 6
+ *                 description: Mật khẩu (ít nhất 6 ký tự)
  *               confirmPassword:
  *                 type: string
  *                 description: Xác nhận mật khẩu
@@ -76,8 +77,8 @@ router.post(
     body('name').notEmpty().withMessage('Tên không được để trống'),
     body('email').isEmail().withMessage('Email không hợp lệ'),
     body('password')
-      .isLength({ min: 8 })
-      .withMessage('Mật khẩu phải có ít nhất 8 ký tự'),
+      .isLength({ min: 6 })
+      .withMessage('Mật khẩu phải có ít nhất 6 ký tự'),
     body('confirmPassword')
       .notEmpty()
       .withMessage('Mật khẩu xác nhận không được để trống'),
@@ -298,8 +299,8 @@ router.post(
  *                 description: Reset token
  *               password:
  *                 type: string
- *                 minLength: 8
- *                 description: Mật khẩu mới (ít nhất 8 ký tự)
+ *                 minLength: 6
+ *                 description: Mật khẩu mới (ít nhất 6 ký tự)
  *               confirmPassword:
  *                 type: string
  *                 description: Xác nhận mật khẩu mới
@@ -327,8 +328,8 @@ router.post(
   validate([
     body('token').notEmpty().withMessage('Token không được để trống'),
     body('password')
-      .isLength({ min: 8 })
-      .withMessage('Mật khẩu phải có ít nhất 8 ký tự'),
+      .isLength({ min: 6 })
+      .withMessage('Mật khẩu phải có ít nhất 6 ký tự'),
     body('confirmPassword')
       .notEmpty()
       .withMessage('Mật khẩu xác nhận không được để trống'),
@@ -376,6 +377,50 @@ router.post(
   '/verify-email',
   validate([body('token').notEmpty().withMessage('Token không được để trống')]),
   verifyEmail
+);
+
+/**
+ * @swagger
+ * /api/auth/resend-verification:
+ *   post:
+ *     summary: Gửi lại email xác thực
+ *     tags: [Authentication]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             type: object
+ *             required:
+ *               - email
+ *             properties:
+ *               email:
+ *                 type: string
+ *                 format: email
+ *                 description: Email người dùng
+ *     responses:
+ *       200:
+ *         description: Email xác thực đã được gửi lại
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 message:
+ *                   type: string
+ *       400:
+ *         description: Email không tồn tại hoặc đã được xác thực
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/Error'
+ */
+// Resend verification email
+router.post(
+  '/resend-verification',
+  authLimiter,
+  validate([body('email').isEmail().withMessage('Email không hợp lệ')]),
+  resendVerification
 );
 
 export default router;

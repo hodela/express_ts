@@ -30,6 +30,7 @@ export class UserService {
           theme: true,
           language: true,
           role: true,
+          isVerified: true,
           createdAt: true,
           updatedAt: true,
           lastLoginAt: true,
@@ -75,6 +76,7 @@ export class UserService {
             theme: true,
             language: true,
             role: true,
+            isVerified: true,
             createdAt: true,
             lastLoginAt: true,
           },
@@ -123,6 +125,7 @@ export class UserService {
           theme: true,
           language: true,
           role: true,
+          isVerified: true,
           createdAt: true,
           updatedAt: true,
         },
@@ -202,6 +205,38 @@ export class UserService {
       return { message: 'User deleted successfully' };
     } catch (error) {
       logError(error as Error, 'User Service - Delete By ID');
+      throw error;
+    }
+  }
+
+  static async verifyPassword(id: string, password: string) {
+    try {
+      const user = await prisma.user.findUnique({
+        where: { id },
+        select: {
+          id: true,
+          password: true,
+        },
+      });
+
+      if (!user) {
+        const error: CustomError = new Error('User not found');
+        error.statusCode = 404;
+        throw error;
+      }
+
+      // Verify password
+      const isValidPassword = await bcrypt.compare(password, user.password);
+      if (!isValidPassword) {
+        const error: CustomError = new Error('Password is incorrect');
+        error.statusCode = 400;
+        throw error;
+      }
+
+      logSuccess('Password verified successfully', { userId: id });
+      return true;
+    } catch (error) {
+      logError(error as Error, 'User Service - Verify Password');
       throw error;
     }
   }

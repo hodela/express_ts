@@ -1,11 +1,9 @@
-import { Request, Response, NextFunction } from 'express';
 import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+import { NextFunction, Request, Response } from 'express';
 import { prisma } from '../config/database';
-import { CustomError } from '../middlewares/error.middleware';
+import { logError, logSuccess, logWarning } from '../config/logger';
 import { AuthService } from '../services/auth.service';
 import { EmailService } from '../services/email.service';
-import { logSuccess, logError, logWarning } from '../config/logger';
 
 export const register = async (
   req: Request,
@@ -159,6 +157,7 @@ export const login = async (
         theme: user.theme,
         language: user.language,
         role: user.role,
+        isVerified: user.isVerified,
         createdAt: user.createdAt,
         updatedAt: user.updatedAt,
       },
@@ -432,6 +431,80 @@ export const verifyEmail = async (
     });
   } catch (error) {
     logError(error as Error, 'Auth Controller - Verify Email');
+    next(error);
+  }
+};
+
+export const resendVerification = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    const { email } = req.body;
+
+    // Find user
+    const user = await prisma.user.findUnique({
+      where: { email },
+    });
+
+    if (!user) {
+      logWarning('Resend verification failed - User not found', { email });
+      return res.status(400).json({
+        message: 'Gửi lại email xác thực thất bại',
+        code: 'RESEND_VERIFICATION_FAILED',
+        details: {
+          email: ['Email không tồn tại trong hệ thống'],
+        },
+      });
+    }
+
+    // Check if user is already verified
+    if (user.isVerified) {
+      logWarning('Resend verification failed - User already verified', {
+        email,
+        userId: user.id,
+      });
+      return res.status(400).json({
+        message: 'Gửi lại email xác thực thất bại',
+        code: 'RESEND_VERIFICATION_FAILED',
+        details: {
+          email: ['Tài khoản đã được xác thực'],
+        },
+      });
+    }
+
+    // Generate new verification token
+    const verificationToken = AuthService.generateVerificationToken();
+
+    // Update user with new token
+    await prisma.user.update({
+      where: { id: user.id },
+      data: {
+        verificationToken,
+        verificationTokenExpiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
+      },
+    });
+
+    // Send verification email (if email service is configured)
+    try {
+      await EmailService.sendVerificationEmail(user.email, verificationToken);
+    } catch (emailError) {
+      logError(
+        emailError as Error,
+        'Auth Controller - Resend Verification - Email Service'
+      );
+    }
+
+    logSuccess('Verification email resent successfully', {
+      userId: user.id,
+      email: user.email,
+    });
+    res.json({
+      message: 'Email xác thực đã được gửi lại',
+    });
+  } catch (error) {
+    logError(error as Error, 'Auth Controller - Resend Verification');
     next(error);
   }
 };

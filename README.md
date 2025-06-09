@@ -55,6 +55,7 @@ PORT=3000
 
 # Database
 DATABASE_URL=postgresql://user:password@localhost:5432/express_ts
+TEST_DATABASE_URL=postgresql://user:password@localhost:5432/express_ts_test
 
 # Redis
 REDIS_URL=redis://localhost:6379
@@ -74,6 +75,13 @@ RATE_LIMIT_MAX_REQUESTS=100
 
 # Logging
 LOG_LEVEL=info
+
+# File Upload
+UPLOAD_ENGINE=local
+UPLOAD_MAX_FILE_SIZE=5242880
+UPLOAD_ALLOWED_EXTENSIONS=jpg,jpeg,png,gif,webp
+UPLOAD_PATH=src/assets/upload
+UPLOAD_URL_PREFIX=/uploads
 ```
 
 ### 4. Setup database
@@ -154,6 +162,7 @@ Sau khi chạy server, truy cập:
 - `POST /api/auth/forgot-password` - Quên mật khẩu
 - `POST /api/auth/reset-password` - Đặt lại mật khẩu
 - `POST /api/auth/verify-email` - Xác thực email
+- `POST /api/auth/resend-verification` - Gửi lại email xác thực
 
 ### User Management Endpoints
 
@@ -164,6 +173,7 @@ Sau khi chạy server, truy cập:
 - `DELETE /api/users/avatar` - Xóa avatar
 - `PATCH /api/users/theme` - Cập nhật chủ đề giao diện
 - `PATCH /api/users/language` - Cập nhật ngôn ngữ
+- `DELETE /api/users/delete-account` - Xóa tài khoản
 
 ### Example Usage
 
@@ -251,7 +261,9 @@ express_ts/
 │   ├── config/                # Configuration files
 │   │   ├── database.ts        # Prisma configuration
 │   │   ├── redis.ts           # Redis configuration
+│   │   ├── resend.ts          # Resend configuration
 │   │   ├── logger.ts          # Pino logger setup
+│   │   ├── upload.config.ts   # File upload configuration
 │   │   └── swagger.ts         # Swagger configuration
 │   ├── controllers/           # Route controllers
 │   │   ├── auth.controller.ts # Authentication controller
@@ -262,6 +274,7 @@ express_ts/
 │   │   ├── logging.middleware.ts     # Request logging
 │   │   ├── notFound.middleware.ts    # 404 handler
 │   │   ├── rateLimiter.middleware.ts # Rate limiting
+│   │   ├── upload.middleware.ts      # File upload middleware
 │   │   └── validation.middleware.ts  # Input validation
 │   ├── routes/                # Route definitions
 │   │   ├── index.ts           # Main routes file
@@ -271,12 +284,27 @@ express_ts/
 │   │   ├── auth.service.ts    # Authentication service
 │   │   ├── user.service.ts    # User management service
 │   │   └── email.service.ts   # Email service (Resend)
+│   ├── services/upload/       # File upload services
+│   │   ├── local-upload.service.ts # Local file upload service
+│   │   └── upload.service.ts    # Upload service interface
 │   ├── utils/                 # Utility functions
 │   │   ├── constants.ts       # Application constants
 │   │   ├── helpers.ts         # Helper functions
 │   │   └── validators.ts      # Custom validators
+│   ├── assets/                # Static assets
+│   │   └── upload/            # Upload directory
+│   ├── templates/             # Email templates
+│   │   ├── emails/            # Email templates
+│   │   │   ├── BaseEmailTemplate.tsx # Base email template
+│   │   │   ├── WelcomeEmail.tsx # Welcome email template
+│   │   │   ├── EmailVerificationEmail.tsx # Email verification email template
+│   │   │   └── PasswordResetEmail.tsx # Password reset email template
+│   ├── locales/               # Language files
+│   │   ├── en.json            # English language file
+│   │   └── vi.json            # Vietnamese language file
 │   └── types/                 # TypeScript type definitions
 │       ├── express.d.ts       # Express type extensions
+│       ├── upload.d.ts        # Upload type extensions
 │       └── index.ts           # Global type definitions
 ├── tests/                     # Test files
 │   ├── setup.ts               # Test setup configuration

@@ -3,7 +3,9 @@ import cors from 'cors';
 import 'dotenv/config';
 import express from 'express';
 import helmet from 'helmet';
+import path from 'path';
 import swaggerUi from 'swagger-ui-express';
+import { uploadConfig } from './config/upload.config';
 import { swaggerSpec } from './config/swagger';
 import { errorHandler } from './middlewares/error.middleware';
 import { loggingMiddleware } from './middlewares/logging.middleware';
@@ -33,6 +35,12 @@ app.use(compression());
 
 // Custom logging middleware (thay thế morgan)
 app.use(loggingMiddleware);
+
+// Static file serving cho uploaded files
+app.use(
+  uploadConfig.urlPrefix || '/uploads',
+  express.static(path.resolve(uploadConfig.uploadPath || 'src/assets/upload'))
+);
 
 // API Documentation
 app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));

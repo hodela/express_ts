@@ -64,7 +64,7 @@ expect.extend({
 // Setup fake timers
 beforeAll(() => {
   jest.useFakeTimers();
-  jest.setSystemTime(new Date('2024-01-01T00:00:00.000Z'));
+  jest.setSystemTime(new Date('2025-01-01T00:00:00.000Z'));
 });
 
 afterAll(() => {

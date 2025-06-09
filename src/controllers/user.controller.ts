@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from 'express';
 import { CustomError } from '../middlewares/error.middleware';
 import { UserService } from '../services/user.service';
 import { logSuccess, logError } from '../config/logger';
+import { uploadService } from '../services/upload/upload-factory.service';
 
 export const getProfile = async (
   req: Request,
@@ -147,20 +148,54 @@ export const uploadAvatar = async (
       });
     }
 
-    // For now, we'll just simulate the upload process
-    // In a real application, you would handle file upload here
-    const avatarUrl = `https://example.com/avatars/${req.user.id}-${Date.now()}.jpg`;
+    if (!req.file) {
+      logError(
+        new Error('No file uploaded'),
+        'User Controller - Upload Avatar'
+      );
+      return res.status(400).json({
+        message: 'Không tìm thấy file để upload',
+        code: 'NO_FILE_UPLOADED',
+      });
+    }
 
-    await UserService.updateById(req.user.id, {
-      avatar: avatarUrl,
+    // Delete old avatar if exists
+    const currentUser = await UserService.findById(req.user.id);
+    if (currentUser.avatar) {
+      try {
+        // Extract filename from URL
+        const oldFilename = currentUser.avatar.split('/').pop();
+        if (oldFilename && !currentUser.avatar.startsWith('http')) {
+          await uploadService.deleteFile(oldFilename);
+        }
+      } catch (error) {
+        // Log error but don't fail the upload
+        logError(error as Error, 'Failed to delete old avatar');
+      }
+    }
+
+    // Upload new avatar
+    const uploadResult = await uploadService.uploadFile(req.file);
+
+    // Update user with new avatar URL
+    const updatedUser = await UserService.updateById(req.user.id, {
+      avatar: uploadResult.url,
     });
 
     logSuccess('Avatar uploaded successfully', {
       userId: req.user.id,
-      avatarUrl,
+      filename: uploadResult.filename,
+      size: uploadResult.size,
     });
+
     res.json({
-      avatarUrl,
+      user: updatedUser,
+      avatar: {
+        url: uploadResult.url,
+        filename: uploadResult.filename,
+        size: uploadResult.size,
+      },
+      message: 'Upload avatar thành công',
     });
   } catch (error) {
     logError(error as Error, 'User Controller - Upload Avatar');
@@ -185,12 +220,30 @@ export const deleteAvatar = async (
       });
     }
 
-    await UserService.updateById(req.user.id, {
+    // Get current user to check if avatar exists
+    const currentUser = await UserService.findById(req.user.id);
+
+    if (currentUser.avatar) {
+      try {
+        // Extract filename from URL and delete from storage
+        const filename = currentUser.avatar.split('/').pop();
+        if (filename && !currentUser.avatar.startsWith('http')) {
+          await uploadService.deleteFile(filename);
+        }
+      } catch (error) {
+        // Log error but continue with database update
+        logError(error as Error, 'Failed to delete avatar file from storage');
+      }
+    }
+
+    // Update user record to remove avatar
+    const updatedUser = await UserService.updateById(req.user.id, {
       avatar: null,
     });
 
     logSuccess('Avatar deleted successfully', { userId: req.user.id });
     res.json({
+      user: updatedUser,
       message: 'Xóa avatar thành công',
     });
   } catch (error) {
@@ -370,6 +423,70 @@ export const deleteUser = async (
     });
   } catch (error) {
     logError(error as Error, 'User Controller - Delete User');
+    next(error);
+  }
+};
+
+export const deleteAccount = async (
+  req: Request,
+  res: Response,
+  next: NextFunction
+) => {
+  try {
+    if (!req.user) {
+      logError(
+        new Error('User not authenticated'),
+        'User Controller - Delete Account'
+      );
+      return res.status(401).json({
+        message: 'Xóa tài khoản thất bại',
+        code: 'DELETE_ACCOUNT_FAILED',
+      });
+    }
+
+    const { password } = req.body;
+
+    if (!password) {
+      logError(
+        new Error('Password is required for account deletion'),
+        'User Controller - Delete Account'
+      );
+      return res.status(400).json({
+        message: 'Xóa tài khoản thất bại',
+        code: 'DELETE_ACCOUNT_FAILED',
+        details: {
+          password: ['Mật khẩu là bắt buộc để xóa tài khoản'],
+        },
+      });
+    }
+
+    try {
+      // Verify password before deletion
+      await UserService.verifyPassword(req.user.id, password);
+
+      // Delete the account
+      await UserService.deleteById(req.user.id);
+
+      logSuccess('Account deleted successfully', { userId: req.user.id });
+      res.json({
+        success: true,
+        message: 'Tài khoản đã được xóa thành công',
+      });
+    } catch (error: any) {
+      if (error.message === 'Password is incorrect') {
+        logError(error, 'User Controller - Delete Account');
+        return res.status(400).json({
+          message: 'Xóa tài khoản thất bại',
+          code: 'DELETE_ACCOUNT_FAILED',
+          details: {
+            password: ['Mật khẩu không đúng'],
+          },
+        });
+      }
+      throw error;
+    }
+  } catch (error) {
+    logError(error as Error, 'User Controller - Delete Account');
     next(error);
   }
 };
